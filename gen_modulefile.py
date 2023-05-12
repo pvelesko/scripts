@@ -44,6 +44,15 @@ module.append("prepend-path LIBRARY_PATH {install_dir}/lib".format(install_dir=a
 module.append("prepend-path LIBRARY_PATH {install_dir}/lib64".format(install_dir=args.install_dir))
 module.append("prepend-path CPATH {install_dir}/include".format(install_dir=args.install_dir))
 
-with open("{modulefiles}/{module_name}".format(modulefiles=args.modulefiles, module_name=args.module_name), 'w') as f:
+# Get full file path
+full_path = "{modulefiles}/{module_name}".format(modulefiles=args.modulefiles, module_name=args.module_name)
+
+# Get the directory path
+dir_path = os.path.dirname(full_path)
+
+# Make the dirs if they don't exist
+os.makedirs(dir_path, exist_ok=True)
+
+with open(full_path, 'w') as f:
     for line in module:
         f.write(line + "\n")
