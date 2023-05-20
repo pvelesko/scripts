@@ -8,9 +8,9 @@ parser = argparse.ArgumentParser(
                     prog = 'Generate a modulefile for an intalled package',
                     description = 'Sets up PATH and LD_LIBRARY_PATH along with optional env vars',
                     epilog = '')
+parser.add_argument('modulefiles', help='path to the modulefiles directory')
 parser.add_argument('install_dir', help='path to the install directory')
 parser.add_argument('module_name', help='full name of the module. Ex: cuda/versions/10.1.234')
-parser.add_argument('--modulefiles', '-m', help='path to the modulefiles directory', default='{home}/local/modulefiles'.format(home=home))
 parser.add_argument('--extra', '-e', action='append', help='additional env var to export. Install dir can be accessed as install_dir. Ex: -e "HIP_DIR=install_dir"')
 parser.add_argument('--prereq', '-p', action='append', help='prereq modules. Ex: -p "gcc/8.3.0"')
 args = parser.parse_args()
