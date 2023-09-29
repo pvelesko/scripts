@@ -19,8 +19,11 @@ if not args.module_name:
     if "/install/" not in args.install_dir:
         print("Error: install_dir must contain '/install/' to auto-generate module_name.")
         sys.exit(1)
-    install_base, module_name = args.install_dir.split("/install/", 1)
-    args.install_dir = install_base + "/install"
+    # split the string into the top-level directory and the install dir
+    _, module_name = args.install_dir.split("/install/", 1)
+
+    install_base, _ = os.path.split(args.install_dir)
+    args.install_dir = install_base
     args.module_name = module_name
 else:
     module_name = args.module_name
