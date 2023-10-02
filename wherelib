@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 libraryname.so"
+    echo "Searches for the specified library in LD_LIBRARY_PATH, directories listed in /etc/ld.so.conf, and common library directories."
+    exit 1
+fi
+
+LIB_NAME=$1
+
+# Search in LD_LIBRARY_PATH
+echo $LD_LIBRARY_PATH | tr ':' '\n' | xargs -I {} find {} -name $LIB_NAME 2>/dev/null
+
+# Search in /etc/ld.so.conf directories
+while read -r DIR; do
+    find "$DIR" -name $LIB_NAME 2>/dev/null
+done < <(cat /etc/ld.so.conf | grep -v "^#" | xargs -I {} echo {})
+
+# Search in common library directories
+for DIR in /usr/lib /usr/local/lib /lib; do
+    find "$DIR" -name $LIB_NAME 2>/dev/null
+done
+
