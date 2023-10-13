@@ -47,7 +47,7 @@ if args.extra:
         var, val = extra.split('=')
         if val == "install_dir":
             val = "$install_dir"
-        module.append("setenv {var} \"{val}\"".format(var=var, val=val))
+        module.append("pushenv {var} \"{val}\"".format(var=var, val=val))
 
 module.append("")
 module.append("prepend-path PATH $install_dir/bin")

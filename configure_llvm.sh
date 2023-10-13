@@ -3,7 +3,7 @@
 # check arguments
 if [ $# -ne 3 ]; then
   echo "Usage: $0 <version> <install_dir> <build_type>"
-  echo "version: LLVM version 15, 16, 17"
+  echo "version: LLVM version 15.x, 16.x, 17.x"
   echo "build_type: static or dynamic"
   exit 1
 fi
@@ -18,34 +18,35 @@ export LLVM_DIR=`pwd`/llvm-project/llvm
 
 # check if llvm-project exists, if not clone it
 if [ ! -d llvm-project ]; then
-  git clone https://github.com/CHIP-SPV/llvm-project.git -b chipStar-llvm-${VERSION} --depth 1
-  cd ${LLVM_DIR}/projects
-  git clone https://github.com/CHIP-SPV/SPIRV-LLVM-Translator.git -b chipStar-llvm-${VERSION} --depth 1
+  git clone https://github.com/llvm/llvm-project.git -b release/${VERSION} --depth 1
+  # cd ${LLVM_DIR}/projects
+  # git clone https://github.com/CHIP-SPV/SPIRV-LLVM-Translator.git -b chipStar-llvm-${VERSION} --depth 1
   cd ${LLVM_DIR}
 else
   # Warn the user, error out
-  echo "llvm-project directory already exists. Assuming it's cloned from chipStar."
-  cd ${LLVM_DIR}
-  # check if already on the desired branch 
-  if [ `git branch --show-current` == "chipStar-llvm-${VERSION}" ]; then
-    echo "Already on branch chipStar-llvm-${VERSION}"
-  else
-    echo "Switching to branch chipStar-llvm-${VERSION}"
-    git br -D chipStar-llvm-${VERSION} &> /dev/null
-    git fetch origin chipStar-llvm-${VERSION}:chipStar-llvm-${VERSION}
-    git checkout chipStar-llvm-${VERSION}
-  fi
-  cd ${LLVM_DIR}/projects/SPIRV-LLVM-Translator
-  # check if already on the desired branch
-  if [ `git branch --show-current` == "chipStar-llvm-${VERSION}" ]; then
-    echo "Already on branch chipStar-llvm-${VERSION}"
-  else
-    echo "Switching to branch chipStar-llvm-${VERSION}"
-    git br -D chipStar-llvm-${VERSION} &> /dev/null
-    git fetch origin chipStar-llvm-${VERSION}:chipStar-llvm-${VERSION}
-    git checkout chipStar-llvm-${VERSION}
-  fi
-  cd ${LLVM_DIR}
+  echo "llvm-project directory already exists."
+  exit 1
+  # cd ${LLVM_DIR}
+  # # check if already on the desired branch 
+  # if [ `git branch --show-current` == "chipStar-llvm-${VERSION}" ]; then
+  #   echo "Already on branch chipStar-llvm-${VERSION}"
+  # else
+  #   echo "Switching to branch chipStar-llvm-${VERSION}"
+  #   git br -D chipStar-llvm-${VERSION} &> /dev/null
+  #   git fetch origin chipStar-llvm-${VERSION}:chipStar-llvm-${VERSION}
+  #   git checkout chipStar-llvm-${VERSION}
+  # fi
+  # cd ${LLVM_DIR}/projects/SPIRV-LLVM-Translator
+  # # check if already on the desired branch
+  # if [ `git branch --show-current` == "chipStar-llvm-${VERSION}" ]; then
+  #   echo "Already on branch chipStar-llvm-${VERSION}"
+  # else
+  #   echo "Switching to branch chipStar-llvm-${VERSION}"
+  #   git br -D chipStar-llvm-${VERSION} &> /dev/null
+  #   git fetch origin chipStar-llvm-${VERSION}:chipStar-llvm-${VERSION}
+  #   git checkout chipStar-llvm-${VERSION}
+  # fi
+  # cd ${LLVM_DIR}
 fi
 
 # check if the build directory exists, if not create it
