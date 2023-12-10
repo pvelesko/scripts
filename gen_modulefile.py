@@ -39,6 +39,9 @@ if args.prereq:
     for prereq in args.prereq:
         module.append("prereq {prereq}".format(prereq=prereq))
 
+# drop tailing slash if present from install_dir
+if args.install_dir[-1] == '/':
+    args.install_dir = args.install_dir[:-1]
 module.append("")
 module.append("set install_dir {install_dir}".format(install_dir=args.install_dir))
 
@@ -72,6 +75,15 @@ full_path = "{modulefiles}/{module_name}".format(modulefiles=args.modulefiles, m
 
 # Get the directory path
 dir_path = os.path.dirname(full_path)
+
+# Check if the file already exists
+if os.path.exists(full_path):
+    print("\nmodulefile already exists at {full_path}".format(full_path=full_path))
+    sys.exit(0)
+
+if os.path.isfile(dir_path):
+    print("\nmodulefile already exists at {dir_path}".format(dir_path=dir_path))
+    sys.exit(0)
 
 # Make the dirs if they don't exist
 os.makedirs(dir_path, exist_ok=True)
