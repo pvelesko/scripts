@@ -72,6 +72,9 @@ input("Press Enter to confirm and write modulefile to disk...")
 
 # Get full file path
 full_path = "{modulefiles}/{module_name}".format(modulefiles=args.modulefiles, module_name=module_name)
+# drop tailing slash if present from full_path
+if full_path[-1] == '/':
+    full_path = full_path[:-1]
 
 # Get the directory path
 dir_path = os.path.dirname(full_path)
