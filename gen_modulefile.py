@@ -59,6 +59,8 @@ module.append("prepend-path LD_LIBRARY_PATH $install_dir/lib64")
 module.append("prepend-path LIBRARY_PATH $install_dir/lib")
 module.append("prepend-path LIBRARY_PATH $install_dir/lib64")
 module.append("prepend-path CPATH $install_dir/include")
+module.append("prepend-path PKG_CONFIG_PATH $install_dir/lib/pkgconfig")
+module.append("prepend-path CMAKE_PREFIX_PATH $install_dir/lib/cmake")
 
 # Print the details and contents of the modulefile before writing to disk
 print("\nModulefile contents:")
