@@ -28,7 +28,7 @@ if not args.module_name:
 else:
     module_name = args.module_name
 
-print("Generating modulefile {module_name} in {modulefiles}".format(module_name=module_name, modulefiles=args.modulefiles))
+print("Generating modulefile {modulefiles}/{module_name}".format(module_name=module_name, modulefiles=args.modulefiles))
 print("The module can be loaded by running: module load {module_name}".format(module_name=module_name))
 
 module = []
@@ -99,3 +99,6 @@ with open(full_path, 'w') as f:
         f.write(line + "\n")
 
 print("Modulefile written to: {}".format(full_path))
+
+# launch vim to edit the modulefile
+os.system("vim {full_path}".format(full_path=full_path))
