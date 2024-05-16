@@ -27,6 +27,8 @@ if not args.module_name:
     args.module_name = module_name
 else:
     module_name = args.module_name
+    
+package_name = module_name.split('/')[0]
 
 print("Generating modulefile {modulefiles}/{module_name}".format(module_name=module_name, modulefiles=args.modulefiles))
 print("The module can be loaded by running: module load {module_name}".format(module_name=module_name))
@@ -52,6 +54,13 @@ if args.extra:
             val = "$install_dir"
         module.append("pushenv {var} \"{val}\"".format(var=var, val=val))
 
+package_name_upper = package_name.upper()
+module.append(f"prepend-path ${package_name}_PATH $install_dir/bin")
+module.append(f"prepend-path ${package_name}_ROOT $install_dir/bin")
+module.append(f"prepend-path ${package_name}_DIR $install_dir/bin")
+module.append(f"prepend-path ${package_name_upper}_PATH $install_dir/bin")
+module.append(f"prepend-path ${package_name_upper}_ROOT $install_dir/bin")
+module.append(f"prepend-path ${package_name_upper}_DIR $install_dir/bin")
 module.append("")
 module.append("prepend-path PATH $install_dir/bin")
 module.append("prepend-path LD_LIBRARY_PATH $install_dir/lib")
