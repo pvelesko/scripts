@@ -61,6 +61,17 @@ module.append(f"pushenv {package_name}_DIR $install_dir")
 module.append(f"pushenv {package_name_upper}_PATH $install_dir")
 module.append(f"pushenv {package_name_upper}_ROOT $install_dir")
 module.append(f"pushenv {package_name_upper}_DIR $install_dir")
+
+# Check for CMake module subdirectory and set MODULE_PATH if found
+module_subdir = os.path.join(args.install_dir, package_name)
+if os.path.exists(module_subdir) and os.path.isdir(module_subdir):
+    # Check if directory contains .cmake files
+    has_cmake_files = any(f.endswith('.cmake') for f in os.listdir(module_subdir) if os.path.isfile(os.path.join(module_subdir, f)))
+    if has_cmake_files:
+        # Replace dashes with underscores for MODULE_PATH variable name
+        module_var = f"{package_name_upper.replace('-', '_')}_MODULE_PATH"
+        module.append(f"pushenv {module_var} $install_dir/{package_name}")
+
 module.append("")
 module.append("prepend-path PATH $install_dir/bin")
 module.append("prepend-path LD_LIBRARY_PATH $install_dir/lib")
@@ -113,4 +124,4 @@ with open(full_path, 'w') as f:
 print("Modulefile written to: {}".format(full_path))
 
 # launch vim to edit the modulefile
-os.system("vim {full_path}".format(full_path=full_path))
+#os.system("vim {full_path}".format(full_path=full_path))
