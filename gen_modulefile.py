@@ -73,8 +73,13 @@ if args.lua:
     module.append('prepend_path("LD_LIBRARY_PATH", install_dir .. "/lib")')
     module.append('prepend_path("LD_LIBRARY_PATH", install_dir .. "/lib64")')
     if sys.platform == "darwin":
-        module.append('prepend_path("DYLD_LIBRARY_PATH", install_dir .. "/lib")')
-        module.append('prepend_path("DYLD_LIBRARY_PATH", install_dir .. "/lib64")')
+        # On macOS, use DYLD_FALLBACK_LIBRARY_PATH instead of DYLD_LIBRARY_PATH.
+        # DYLD_LIBRARY_PATH takes precedence over @rpath, which breaks libraries
+        # that rely on @rpath to find their dependencies (e.g. PoCL finding LLVM).
+        # DYLD_FALLBACK_LIBRARY_PATH is checked after @rpath, matching the behavior
+        # of LD_LIBRARY_PATH on Linux where rpath takes precedence.
+        module.append('prepend_path("DYLD_FALLBACK_LIBRARY_PATH", install_dir .. "/lib")')
+        module.append('prepend_path("DYLD_FALLBACK_LIBRARY_PATH", install_dir .. "/lib64")')
     module.append('prepend_path("LIBRARY_PATH", install_dir .. "/lib")')
     module.append('prepend_path("LIBRARY_PATH", install_dir .. "/lib64")')
     module.append('prepend_path("CPATH", install_dir .. "/include")')
@@ -115,11 +120,17 @@ else:
     
     module.append("")
     module.append("prepend-path PATH $install_dir/bin")
-    module.append("prepend-path LD_LIBRARY_PATH $install_dir/lib")
-    module.append("prepend-path LD_LIBRARY_PATH $install_dir/lib64")
     if sys.platform == "darwin":
-        module.append("prepend-path DYLD_LIBRARY_PATH $install_dir/lib")
-        module.append("prepend-path DYLD_LIBRARY_PATH $install_dir/lib64")
+        # On macOS, use DYLD_FALLBACK_LIBRARY_PATH instead of DYLD_LIBRARY_PATH.
+        # DYLD_LIBRARY_PATH takes precedence over @rpath, which breaks libraries
+        # that rely on @rpath to find their dependencies (e.g. PoCL finding LLVM).
+        # DYLD_FALLBACK_LIBRARY_PATH is checked after @rpath, matching the behavior
+        # of LD_LIBRARY_PATH on Linux where rpath takes precedence.
+        module.append("prepend-path DYLD_FALLBACK_LIBRARY_PATH $install_dir/lib")
+        module.append("prepend-path DYLD_FALLBACK_LIBRARY_PATH $install_dir/lib64")
+    else:
+        module.append("prepend-path LD_LIBRARY_PATH $install_dir/lib")
+        module.append("prepend-path LD_LIBRARY_PATH $install_dir/lib64")
     module.append("prepend-path LIBRARY_PATH $install_dir/lib")
     module.append("prepend-path LIBRARY_PATH $install_dir/lib64")
     module.append("prepend-path CPATH $install_dir/include")
