@@ -73,22 +73,57 @@ def in_range(line: int, ranges: List[Tuple[int, int]]) -> bool:
     return False
 
 
-def get_diff(filepath: str) -> str:
-    """Get the unstaged diff for a file."""
-    try:
-        result = subprocess.run(
-            ['git', 'diff', '--', filepath],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        if e.returncode == 128:
-            # Not a git repo or file not found
+def is_untracked(filepath: str) -> bool:
+    """Check if file exists and is untracked (not in index)."""
+    result = subprocess.run(
+        ['git', 'ls-files', '--error-unmatch', filepath],
+        capture_output=True,
+        text=True
+    )
+    if result.returncode == 0:
+        return False  # Tracked
+    # Check file exists (ls-files fails for both untracked and missing)
+    result = subprocess.run(
+        ['git', 'status', '--porcelain', filepath],
+        capture_output=True,
+        text=True,
+        check=True
+    )
+    # ?? = untracked
+    return result.stdout.strip().startswith('??')
+
+
+def get_diff(filepath: str) -> Tuple[str, bool]:
+    """Get the unstaged diff for a file. Returns (diff, is_untracked)."""
+    result = subprocess.run(
+        ['git', 'diff', '--', filepath],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        if result.returncode == 128:
             sys.stderr.write(f"Error: {filepath} not found or not in git repo\n")
             sys.exit(1)
-        raise
+        raise subprocess.CalledProcessError(result.returncode, ['git', 'diff'], result.stdout, result.stderr)
+
+    if result.stdout.strip():
+        return result.stdout, False
+
+    # Empty diff - check if untracked
+    if not is_untracked(filepath):
+        return "", False
+
+    # Generate diff for untracked file (full add)
+    result = subprocess.run(
+        ['git', 'diff', '--no-index', '/dev/null', filepath],
+        capture_output=True,
+        text=True,
+    )
+    # git diff --no-index exits 1 when files differ (which we want)
+    if result.returncode not in (0, 1):
+        sys.stderr.write(f"Error getting diff for {filepath}: {result.stderr}\n")
+        sys.exit(1)
+    return result.stdout, True
 
 
 def parse_hunk_header(line: str) -> Optional[Tuple[int, int, int, int]]:
@@ -251,6 +286,7 @@ Examples:
   git-stage-lines foo.c 10-20           # Stage lines 10-20
   git-stage-lines foo.c 5-10 25 30-40   # Stage multiple ranges
   git-stage-lines foo.c 10-20 --dry-run # Preview what would be staged
+  git-stage-lines newfile.py 1-50       # Stage first 50 lines of untracked file
         """
     )
     parser.add_argument('file', help='File to stage lines from')
@@ -274,19 +310,15 @@ Examples:
         range_strs = [f"{s}-{e}" if s != e else str(s) for s, e in normalized_ranges]
         sys.stderr.write(f"Target ranges: {', '.join(range_strs)}\n")
     
-    # Get diff
-    diff = get_diff(args.file)
+    # Get diff (handles both modified and untracked files)
+    diff, is_untracked_file = get_diff(args.file)
     
     if not diff.strip():
         sys.stderr.write(f"No unstaged changes found in {args.file}\n")
         sys.exit(0)
     
-    # Check for binary/untracked file indicators
-    if diff.startswith('Binary files differ') or 'diff --git' not in diff:
-        if 'new file' in diff.lower() or 'deleted file' in diff.lower():
-            sys.stderr.write(f"Error: {args.file} appears to be untracked or deleted.\n")
-            sys.stderr.write("For new files, use 'git add -N <file>' first, then stage specific lines.\n")
-            sys.exit(1)
+    # Check for binary file
+    if diff.startswith('Binary files differ') or ('diff --git' not in diff and not is_untracked_file):
         sys.stderr.write(f"Error: {args.file} appears to be a binary file or has no diff.\n")
         sys.exit(1)
     
